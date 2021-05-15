@@ -46,4 +46,4 @@ python main.py
 #### Greedy Best-First
 <img  src="./ScreenShots/Greedy.png" width="50%" alt="Greedy">
 
-[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/ishandeveloper)
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/karan0805)
