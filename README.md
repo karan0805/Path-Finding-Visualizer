@@ -1,4 +1,6 @@
 # Path Finding Visualizer
+![Pathfinder](ScreenShots/pathfinder.png)
+
 A  Python GUI App which visualizes path finding in pygame window.
 
 **Algorithms Added**
