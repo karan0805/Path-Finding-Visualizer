@@ -3,11 +3,12 @@
 
 A  Python GUI App which visualizes path finding in pygame window.
 
+
 **Algorithms Added**
 
- - [A-Star](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#a-star)
- - [Dijkstra](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#dijkstra)
- - [Greedy Best-First](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#greedy-best-first)
+ - ***[A-Star](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#a-star)***
+ - ***[Dijkstra](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#dijkstra)***
+ - ***[Greedy Best-First](https://github.com/karan0805/Path-Finding-Visualizer/new/master?readme=1#greedy-best-first)***
 
 ## Setup
 
@@ -48,4 +49,8 @@ python main.py
 #### Greedy Best-First
 <img  src="./ScreenShots/Greedy.png" width="50%" alt="Greedy">
 
-[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/karan0805)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/karan0805/Path-Finding-Visualizer/issues) 
+[![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/karan0805/Path-Finding-Visualizer) 
+
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://github.com/karan0805/Path-Finding-Visualizer) 
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://github.com/karan0805/Path-Finding-Visualizer)
