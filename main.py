@@ -9,72 +9,63 @@ WIN = pygame.display.set_mode((1200, 800))
 pygame.init()
 pygame.display.set_caption("Path Finding Visualiser")
 
-LIGHTBLUE = (64, 206, 227)
-PURPLE = (197, 114, 255)
-#YELLOW2 = (255, 255, 0)
-WHITE = (255, 255, 255)
-BLACK = (50, 50, 50)
-YELLOW = (255, 254, 106)
-GREEN = (126, 217, 87)
-GRIDCOLOUR = (175, 216, 248)
-ORANGE = (255, 165, 0)
+lightblue = (64, 206, 227)
+purple = (197, 114, 255)
+white = (255, 255, 255)
+black = (50, 50, 50)
+yellow = (255, 254, 106)
+green = (126, 217, 87)
+gridcolor = (175, 216, 248)
+orange = (255, 165, 0)
 font = pygame.font.Font("elements/myfont.ttf", 40)
 algos=['  A-Star','Dijkstras','   Greedy']
 menu = pygame.image.load('elements/Visualizer-UI.png')
 
 # ------------------------------------------class for nodes in grid --------------------------------------------------------
-class Spot:
+class Box:
     def __init__(self, row, col, width, total_rows):
         self.row = row
         self.col = col
         self.x = row * width
         self.y = col * width
-        self.color = WHITE
+        self.color = white
         self.neighbors = []
         self.width = width
         self.total_rows = total_rows
 
-    def get_pos(self):
+    def getPos(self):
         return self.row, self.col
 
-    def is_closed(self):
-        return self.color == LIGHTBLUE
+    def isStart(self):
+        return self.color == green
 
-    def is_open(self):
-        return self.color == PURPLE
+    def isEnd(self):
+        return self.color == orange       
 
-    def is_barrier(self):
-        return self.color == BLACK
-
-    def is_start(self):
-        return self.color == GREEN
-
-    def is_end(self):
-        return self.color == ORANGE
+    def isBarrier(self):
+        return self.color == black
 
     def reset(self):
-        self.color = WHITE
+        self.color = white
 
-    def make_start(self):
-        self.color = GREEN
+    def makeStart(self):
+        self.color = green
 
-    def make_closed(self):
-        self.color = LIGHTBLUE
+    def makeClosed(self):
+        self.color = lightblue
 
-    def make_open(self):
-        self.color = PURPLE
+    def makeOpen(self):
+        self.color = purple
 
-    def make_barrier(self):
-        self.color = BLACK
+    def makeBarrier(self):
+        self.color = black
 
-    def make_end(self):
-        self.color = ORANGE
+    def makeEnd(self):
+        self.color = orange
 
-    def make_path(self):
-        self.color = YELLOW
+    def makePath(self):
+        self.color = yellow
 
-    # def make_current(self):
-    #     self.color = YELLOW2
 
     def draw(self, win):
         pygame.draw.rect(
@@ -83,24 +74,24 @@ class Spot:
     def update_neighbors(self, grid):
         self.neighbors = []
         # DOWN
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
+        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].isBarrier():
             self.neighbors.append(grid[self.row + 1][self.col])
 
-        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():  # UP
+        if self.row > 0 and not grid[self.row - 1][self.col].isBarrier():  # UP
             self.neighbors.append(grid[self.row - 1][self.col])
 
         # RIGHT
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
+        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].isBarrier():
             self.neighbors.append(grid[self.row][self.col + 1])
 
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():  # LEFT
+        if self.col > 0 and not grid[self.row][self.col - 1].isBarrier():  # LEFT
             self.neighbors.append(grid[self.row][self.col - 1])
 
     def __lt__(self, other):
         return False
 
 
-def h(p1, p2):
+def heu_func(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
@@ -109,7 +100,7 @@ def h(p1, p2):
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
-        current.make_path()
+        current.makePath()
         draw()
 
 # ---------------------------------------------------------ALGORITHMS--------------------------------------------------------
@@ -119,10 +110,10 @@ def astar(draw, grid, start, end):
     open_set = PriorityQueue()
     open_set.put((0, count, start))
     came_from = {}
-    g_score = {spot: float("inf") for row in grid for spot in row}
+    g_score = {box: float("inf") for row in grid for box in row}
     g_score[start] = 0
-    f_score = {spot: float("inf") for row in grid for spot in row}
-    f_score[start] = h(start.get_pos(), end.get_pos())
+    final_score = {box: float("inf") for row in grid for box in row}
+    final_score[start] = heu_func(start.getPos(), end.getPos())
 
     open_set_hash = {start}
 
@@ -136,7 +127,7 @@ def astar(draw, grid, start, end):
 
         if current == end:
             reconstruct_path(came_from, end, draw)
-            end.make_end()
+            end.makeEnd()
             return True
 
         for neighbor in current.neighbors:
@@ -145,18 +136,18 @@ def astar(draw, grid, start, end):
             if temp_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + \
-                    h(neighbor.get_pos(), end.get_pos())
+                final_score[neighbor] = temp_g_score + \
+                    heu_func(neighbor.getPos(), end.getPos())
                 if neighbor not in open_set_hash:
                     count += 1
-                    open_set.put((f_score[neighbor], count, neighbor))
+                    open_set.put((final_score[neighbor], count, neighbor))
                     open_set_hash.add(neighbor)
-                    neighbor.make_open()
+                    neighbor.makeOpen()
 
         draw()
 
         if current != start:
-            current.make_closed()
+            current.makeClosed()
 
     return False
 
@@ -172,7 +163,7 @@ def dj_algorithm(draw, grid, start, end):
         current = queue.popleft()
         if current == end:
             reconstruct_path(came_from, end, draw)
-            end.make_end()
+            end.makeEnd()
             return True
 
         for neighbor in current.neighbors:
@@ -180,10 +171,10 @@ def dj_algorithm(draw, grid, start, end):
                 visited.append(neighbor)
                 came_from[neighbor] = current
                 queue.append(neighbor)
-                neighbor.make_open()
+                neighbor.makeOpen()
         draw()
         if current != start:
-            current.make_closed()
+            current.makeClosed()
 
     return False
 
@@ -193,8 +184,8 @@ def greedy(draw, grid, start, end):
     open_set = PriorityQueue()
     open_set.put((0, count, start))
     came_from = {}
-    f_score = {spot: float("inf") for row in grid for spot in row}
-    f_score[start] = h(start.get_pos(), end.get_pos())
+    final_score = {box: float("inf") for row in grid for box in row}
+    final_score[start] = heu_func(start.getPos(), end.getPos())
 
     open_set_hash = {start}
 
@@ -208,25 +199,25 @@ def greedy(draw, grid, start, end):
 
         if current == end:
             reconstruct_path(came_from, end, draw)
-            end.make_end()
+            end.makeEnd()
             return True
 
         for neighbor in current.neighbors:
-            temp_f_score = h(neighbor.get_pos(), end.get_pos())
+            temp_f_score = heu_func(neighbor.getPos(), end.getPos())
 
-            if temp_f_score < f_score[neighbor]:
+            if temp_f_score < final_score[neighbor]:
                 came_from[neighbor] = current
-                f_score[neighbor] = temp_f_score
+                final_score[neighbor] = temp_f_score
                 if neighbor not in open_set_hash:
                     count += 1
-                    open_set.put((f_score[neighbor], count, neighbor))
+                    open_set.put((final_score[neighbor], count, neighbor))
                     open_set_hash.add(neighbor)
-                    neighbor.make_open()
+                    neighbor.makeOpen()
 
         draw()
 
         if current != start:
-            current.make_closed()
+            current.makeClosed()
 
     return False
 
@@ -234,9 +225,9 @@ def greedy(draw, grid, start, end):
 
 def clear(grid):
     for row in grid:
-        for spot in row:
-            if not (spot.is_start() or spot.is_end() or spot.is_barrier()):
-                spot.reset()
+        for box in row:
+            if not (box.isStart() or box.isEnd() or box.isBarrier()):
+                box.reset()
 
 def make_grid(rows, width):
     grid = []
@@ -244,8 +235,8 @@ def make_grid(rows, width):
     for i in range(rows):
         grid.append([])
         for j in range(rows):
-            spot = Spot(i, j, gap, rows)
-            grid[i].append(spot)
+            box = Box(i, j, gap, rows)
+            grid[i].append(box)
 
     return grid
 
@@ -253,19 +244,19 @@ def make_grid(rows, width):
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
-        pygame.draw.line(win, GRIDCOLOUR, (1, i * gap), (width, i * gap))
+        pygame.draw.line(win, gridcolor, (1, i * gap), (width, i * gap))
         for j in range(rows+1):
-            pygame.draw.line(win, GRIDCOLOUR, (j * gap, 0), (j * gap, width))
+            pygame.draw.line(win, gridcolor, (j * gap, 0), (j * gap, width))
 
 
 #------------------------------------------USED FOR DRAWING MENU AND GRID IN PYGAME ------------------------------------
 
 def draw(win, grid, rows, width,selector):
-    win.fill(WHITE)
+    win.fill(white)
     win.blit(menu, (800, 0))
     for row in grid:
-        for spot in row:
-            spot.draw(win)
+        for box in row:
+            box.draw(win)
 
     draw_grid(win, rows, width)
     algoname = font.render(algos[selector], True, (255, 255, 255))
@@ -304,23 +295,23 @@ def main(win, width):
                         clear(grid)
                         if selector == 0:
                             for row in grid:
-                                for spot in row:
-                                    spot.update_neighbors(grid)
+                                for box in row:
+                                    box.update_neighbors(grid)
                             flag=astar(lambda: draw(win, grid, ROWS, width,selector),
                                 grid, start, end)
-                            start.make_start()
+                            start.makeStart()
                             if not flag:
                                 Tk().wm_withdraw()
                                 messagebox.showinfo("No Solution", "There was no solution")
                             
                         if selector == 1:
                             for row in grid:
-                                for spot in row:
-                                    spot.update_neighbors(grid)
+                                for box in row:
+                                    box.update_neighbors(grid)
 
                             flag=dj_algorithm(lambda: draw(win, grid, ROWS, width,selector),
                                  grid, start, end)
-                            start.make_start()
+                            start.makeStart()
 
                             if not flag:
                                 Tk().wm_withdraw()
@@ -328,12 +319,12 @@ def main(win, width):
                         
                         if selector == 2:
                             for row in grid:
-                                for spot in row:
-                                    spot.update_neighbors(grid)
+                                for box in row:
+                                    box.update_neighbors(grid)
 
                             flag=greedy(lambda: draw(win, grid, ROWS, width,selector),
                                  grid, start, end)
-                            start.make_start()
+                            start.makeStart()
 
                             if not flag:
                                 Tk().wm_withdraw()
@@ -363,17 +354,17 @@ def main(win, width):
 
                 else:
                     row, col = get_clicked_pos(pos, ROWS, width)
-                    spot = grid[row][col]
-                    if not start and spot != end:
-                        start = spot
-                        start.make_start()
+                    box = grid[row][col]
+                    if not start and box != end:
+                        start = box
+                        start.makeStart()
 
-                    elif not end and spot != start:
-                        end = spot
-                        end.make_end()
+                    elif not end and box != start:
+                        end = box
+                        end.makeEnd()
 
-                    elif spot != end and spot != start:
-                        spot.make_barrier()
+                    elif box != end and box != start:
+                        box.makeBarrier()
 
             elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
@@ -382,27 +373,12 @@ def main(win, width):
                     pass
                 else:
                     row, col = get_clicked_pos(pos, ROWS, width)
-                    spot = grid[row][col]
-                    spot.reset()
-                    if spot == start:
+                    box = grid[row][col]
+                    box.reset()
+                    if box == start:
                         start = None
-                    elif spot == end:
+                    elif box == end:
                         end = None
-
-            # ---------------------------------------- Keyboard Bindings ------------------------------------------------------------------
-            # if event.type == pygame.KEYDOWN:
-            #     if event.key == pygame.K_SPACE and start and end:
-            #         for row in grid:
-            #             for spot in row:
-            #                 spot.update_neighbors(grid)
-
-            #         astar(lambda: draw(win, grid, ROWS, width,selector),
-            #                   grid, start, end)
-            #         start.make_start()
-            #     if event.key == pygame.K_c:
-            #         start = None
-            #         end = None
-            #         grid = make_grid(ROWS, width)
 
 
     pygame.quit()
